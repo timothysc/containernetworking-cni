@@ -22,7 +22,7 @@
 Name:           containernetworking
 Version:        %{tag}
 Release:        1%{?dist}
-Summary:        Libraries for writing plugins to configure network interfaces in Linux containers
+Summary:        Libraries for writing CNI plugins
 License:        ASL 2.0 
 URL:            https://github.com/containernetworking/cni
 ExclusiveArch:  %{go_arches}
@@ -81,6 +81,6 @@ install -p -m 755 -t %{buildroot}%{_libexecdir}/%{name} bin/*
 %{_libexecdir}/%{name}/* 
 
 %changelog 
-* Sun May 07 2017 Timothy St. Clair <tstclair@heptio.com> - 0.5.2-1
+* Sun May 07 2017 Timothy St. Clair <tstclair@heptio.com> - 0.5.1-1
 - Initial release
 
