@@ -1,27 +1,39 @@
-%global commit      137b4975ecab6e1f0c24c1e3c228a50a3cfba75e
+%if 0%{?fedora}
+%global with_debug   1
+%global with_bundled 1
+%else
+%global with_debug   0
+%global with_bundled 1
+%endif
+
+%if 0%{?with_debug}
+# https://bugzilla.redhat.com/show_bug.cgi?id=995136#c12
+%global _dwz_low_mem_die_limit 0
+%else
+%global debug_package   %{nil}
+%endif
+
+%global commit      0799f5732f2a11b329d9e3d51b9c8f2e3759f2ff
 %global shortcommit %(c=%{commit}; echo ${c:0:7})
-%global tag         0.5.2
+%global shortname   cni
+%global tag         0.5.1
 
 # could also call this cni
-Name:       containernetworking
-Version:    %{tag}
-Release:    1%{?dist}
-Summary:    Libraries for writing plugins to configure network interfaces in Linux containers
-License:    ASL 2.0 
-URL:        https://github.com/containernetworking/cni
-
-# ExclusiveArch: x86_64
-
-####################################
-Source:     %{url}/%{commit}/%{name}-%{version}-%{shortcommit}.tar.gz
+Name:           containernetworking
+Version:        %{tag}
+Release:        1%{?dist}
+Summary:        Libraries for writing plugins to configure network interfaces in Linux containers
+License:        ASL 2.0 
+URL:            https://github.com/containernetworking/cni
+ExclusiveArch:  %{go_arches}
 
 ####################################
-# Patch0: 
+Source:     %{url}/archive/%{commit}/%{name}-%{version}-%{shortcommit}.tar.gz
 
 ####################################
-# BuildRequires
-# Requires
-
+BuildRequires: golang >= 1.7
+BuildRequires: go-md2man
+BuildRequires: go-bindata
 
 %description 
 The CNI (Container Network Interface) project consists of a specification 
@@ -53,41 +65,20 @@ It is meant only as a buildtime dependency for other projects.
 
 ##############################################
 %prep 
-%setup -q -n %{name}-%{commit}
-./build.sh
-outpath = "bin" 
-install -p -m 755 -t %{buildroot}%{_bindir} ${outpath}/bridge 
-install -p -m 755 -t %{buildroot}%{_bindir} ${outpath}/cnitool 
-install -p -m 755 -t %{buildroot}%{_bindir} ${outpath}/dhcp
-install -p -m 755 -t %{buildroot}%{_bindir} ${outpath}/flannel 
-install -p -m 755 -t %{buildroot}%{_bindir} ${outpath}/host-local
-install -p -m 755 -t %{buildroot}%{_bindir} ${outpath}/ipvlan 
-install -p -m 755 -t %{buildroot}%{_bindir} ${outpath}/loopback 
-install -p -m 755 -t %{buildroot}%{_bindir} ${outpath}/macvlan
-install -p -m 755 -t %{buildroot}%{_bindir} ${outpath}/noop
-install -p -m 755 -t %{buildroot}%{_bindir} ${outpath}/ptp
-install -p -m 755 -t %{buildroot}%{_bindir} ${outpath}/tuning
+%setup -q -n %{shortname}-%{commit}
+
+%build 
+./build -ldflags "-B 0x$(head -c20 /dev/urandom|od -An -tx1|tr -d ' \n')" -v -x "$@"
+
+%install 
+mkdir -p %{buildroot}%{_libexecdir}/%{name} 
+install -p -m 755 -t %{buildroot}%{_libexecdir}/%{name} bin/* 
 
 ##############################################
 %files 
 %license LICENSE
 %doc *.md
-%{_bindir}/bridge 
-%{_bindir}/cnitool 
-%{_bindir}/dhcp
-%{_bindir}/flannel 
-%{_bindir}/host-local
-%{_bindir}/ipvlan 
-%{_bindir}/loopback 
-%{_bindir}/macvlan
-%{_bindir}/noop
-%{_bindir}/ptp
-%{_bindir}/tuning
-
-%pre 
-%post 
-%preun 
-%postun 
+%{_libexecdir}/%{name}/* 
 
 %changelog 
 * Sun May 07 2017 Timothy St. Clair <tstclair@heptio.com> - 0.5.2-1
