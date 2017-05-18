@@ -34,7 +34,7 @@
 %global shortcommit     %(c=%{commit}; echo ${c:0:7})
 
 ####################################
-Name:           containernetworking
+Name:           containernetworking-cni
 Version:        0.5.1
 Release:        1%{?dist}
 Summary:        Libraries for writing CNI plugin
@@ -61,10 +61,6 @@ BuildRequires: golang(github.com/vishvananda/netlink)
 BuildRequires: golang(golang.org/x/sys/unix)
 BuildRequires: golang(github.com/coreos/go-iptables/iptables)
 %endif
-
-####################################
-# packaged by upstream under kubernetes-cni
-# Obsoletes: kubernetes-cni
 
 %description
 The CNI (Container Network Interface) project consists of a specification
@@ -169,7 +165,7 @@ export GOPATH=$(pwd):%{gopath}
 %endif
 
 ###################
-# I think this is brittle vs. the build tooling as it will 
+# TODO: Fix ./build tooling to make make this less brittle. 
 %gobuild -o bin/cnitool %{import_path}/cnitool
 %gobuild -o bin/plugins/dhcp %{import_path}/plugins/ipam/dhcp
 %gobuild -o bin/plugins/host-local %{import_path}/plugins/ipam/host-local
@@ -248,7 +244,6 @@ export GOPATH=%{buildroot}/%{gopath}:$(pwd)/vendor:%{gopath}
 %endif
 
 ###################
-# why can't you go test ./...
 %gotest %{import_path}/libcni
 %gotest %{import_path}/pkg/invoke
 %gotest %{import_path}/pkg/ip
